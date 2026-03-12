@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -35,6 +35,49 @@ function ThemeToggle() {
 }
 
 export default function Home() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [tradeRequirement, setTradeRequirement] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          company,
+          tradeRequirement,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to send inquiry.");
+      }
+
+      setMessage("Inquiry sent successfully. We will contact you soon.");
+      setFullName("");
+      setEmail("");
+      setCompany("");
+      setTradeRequirement("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <header className="fixed inset-x-0 top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur border-b border-slate-200/70 dark:border-slate-800">
@@ -347,7 +390,7 @@ export default function Home() {
             </div>
 
             <div className="mt-10 rounded-xl border border-slate-200 bg-white p-8">
-              <form className="grid gap-5">
+              <form className="grid gap-5" onSubmit={handleSubmit}>
                 <div>
                   <label className="block text-sm font-semibold mb-2">
                     Full Name
@@ -355,6 +398,8 @@ export default function Home() {
                   <input
                     className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300"
                     placeholder=""
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                   />
                 </div>
                 <div>
@@ -364,26 +409,42 @@ export default function Home() {
                   <input
                     className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300"
                     placeholder=""
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-2">
                     Company
                   </label>
-                  <input className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300" />
+                  <input
+                    className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-2">
                     Trade Requirement
                   </label>
-                  <textarea className="min-h-28 w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300" />
+                  <textarea
+                    className="min-h-28 w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300"
+                    value={tradeRequirement}
+                    onChange={(e) => setTradeRequirement(e.target.value)}
+                  />
                 </div>
                 <button
-                  type="button"
-                  className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-amber-600 px-6 py-3 font-semibold text-white hover:bg-amber-700 transition-colors"
+                  type="submit"
+                  disabled={submitting}
+                  className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-amber-600 px-6 py-3 font-semibold text-white hover:bg-amber-700 transition-colors disabled:opacity-60"
                 >
-                  Send Inquiry <span aria-hidden>↗</span>
+                  {submitting ? "Sending..." : "Send Inquiry"}{" "}
+                  <span aria-hidden>↗</span>
                 </button>
+                {message && (
+                  <p className="text-sm text-emerald-600">{message}</p>
+                )}
+                {error && <p className="text-sm text-red-600">{error}</p>}
               </form>
             </div>
           </div>
