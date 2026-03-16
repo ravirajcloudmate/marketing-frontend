@@ -70,8 +70,17 @@ export default async function AdminPage() {
                     <td className="px-4 py-3 align-top text-sm font-medium text-slate-50">
                       {inq.full_name}
                     </td>
-                    <td className="px-4 py-3 align-top text-xs text-amber-300 break-all">
-                      {inq.email}
+                    <td className="px-4 py-3 align-top text-xs break-all">
+                      <a
+                        className="text-amber-300 underline-offset-2 hover:underline"
+                        href={`mailto:${inq.email}?subject=${encodeURIComponent(
+                          "Regarding your inquiry — Findiy"
+                        )}&body=${encodeURIComponent(
+                          `Hi ${inq.full_name},\n\nThanks for reaching out to Findiy.\n\nCompany: ${inq.company ?? "—"}\nTrade requirement: ${inq.trade_requirement ?? "—"}\n\n—\nFindiy Team`
+                        )}`}
+                      >
+                        {inq.email}
+                      </a>
                     </td>
                     <td className="px-4 py-3 align-top text-sm text-slate-200">
                       {inq.company || "—"}

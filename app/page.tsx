@@ -10,16 +10,26 @@ function ThemeToggle() {
     const stored = window.localStorage.getItem("findiy-theme");
     const initial = stored === "dark" ? "dark" : "light";
     setTheme(initial);
-    document.documentElement.classList.toggle("dark", initial === "dark");
+    if (initial === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, []);
 
   const toggle = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("findiy-theme", next);
-    }
-    document.documentElement.classList.toggle("dark", next === "dark");
+    setTheme((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("findiy-theme", next);
+      }
+      if (next === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      return next;
+    });
   };
 
   return (
@@ -79,7 +89,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+    <div
+      className="min-h-screen"
+      style={{ background: "var(--background)", color: "var(--foreground)" }}
+    >
       <header className="fixed inset-x-0 top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur border-b border-slate-200/70 dark:border-slate-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
