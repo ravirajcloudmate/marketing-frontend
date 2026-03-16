@@ -103,6 +103,12 @@ export default function Home() {
               <a className="hover:text-slate-900 dark:hover:text-white" href="#contact">
                 Contact
               </a>
+              <a
+                className="text-xs font-medium text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-amber-400"
+                href="/admin"
+              >
+                Admin
+              </a>
             </nav>
             <div className="flex items-center gap-2">
               <ThemeToggle />
