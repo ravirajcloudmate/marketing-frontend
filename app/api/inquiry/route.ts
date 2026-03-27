@@ -3,11 +3,12 @@ import { supabaseServer } from "../../../lib/supabaseServer";
 
 export async function POST(request: Request) {
   try {
-    const { fullName, email, company, tradeRequirement } = await request.json();
+    const { fullName, email, contactNumber, company, tradeRequirement } =
+      await request.json();
 
-    if (!fullName || !email) {
+    if (!fullName || !email || !contactNumber) {
       return NextResponse.json(
-        { error: "Full name and email are required." },
+        { error: "Full name, email, and contact number are required." },
         { status: 400 }
       );
     }
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const { error } = await supabaseServer.from("inquiries").insert({
       full_name: fullName,
       email,
+      contact_number: contactNumber,
       company,
       trade_requirement: tradeRequirement,
     });

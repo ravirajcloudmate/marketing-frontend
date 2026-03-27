@@ -47,6 +47,7 @@ function ThemeToggle() {
 export default function Home() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [company, setCompany] = useState("");
   const [tradeRequirement, setTradeRequirement] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -66,6 +67,7 @@ export default function Home() {
         body: JSON.stringify({
           fullName,
           email,
+          contactNumber,
           company,
           tradeRequirement,
         }),
@@ -79,6 +81,7 @@ export default function Home() {
       setMessage("Inquiry sent successfully. We will contact you soon.");
       setFullName("");
       setEmail("");
+      setContactNumber("");
       setCompany("");
       setTradeRequirement("");
     } catch (err: any) {
@@ -430,6 +433,17 @@ export default function Home() {
                     placeholder=""
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Contact Number
+                  </label>
+                  <input
+                    className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-amber-300"
+                    type="tel"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
                   />
                 </div>
                 <div>

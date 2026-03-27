@@ -4,6 +4,7 @@ type Inquiry = {
   id: number;
   full_name: string;
   email: string;
+  contact_number: string | null;
   company: string | null;
   trade_requirement: string | null;
   created_at: string;
@@ -54,6 +55,7 @@ export default async function AdminPage() {
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Full Name</th>
                   <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Contact Number</th>
                   <th className="px-4 py-3">Company</th>
                   <th className="px-4 py-3">Trade Requirement</th>
                 </tr>
@@ -81,6 +83,9 @@ export default async function AdminPage() {
                       >
                         {inq.email}
                       </a>
+                    </td>
+                    <td className="px-4 py-3 align-top text-sm text-slate-200 whitespace-nowrap">
+                      {inq.contact_number || "—"}
                     </td>
                     <td className="px-4 py-3 align-top text-sm text-slate-200">
                       {inq.company || "—"}
