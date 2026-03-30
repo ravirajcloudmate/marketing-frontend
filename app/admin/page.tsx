@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { supabaseServer } from "../../lib/supabaseServer";
+import { getAdminSessionFromCookies } from "../../lib/adminAuth";
 
 function AdminIcon({ name }: { name: "calendar" | "user" | "mail" | "phone" | "building" | "doc" }) {
   const base = "h-4 w-4 shrink-0";
@@ -127,6 +129,17 @@ type Inquiry = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const session = await getAdminSessionFromCookies();
+  if (!session) redirect("/login");
+
+  const { data: adminProfile } = await supabaseServer
+    .from("admins")
+    .select("company_name, email")
+    .eq("id", session.adminId)
+    .maybeSingle();
+
+  if (!adminProfile) redirect("/login");
+
   const { data, error } = await supabaseServer
     .from("inquiries")
     .select("*")
@@ -148,6 +161,9 @@ export default async function AdminPage() {
                 <p className="text-xs text-slate-400">
                   Manage inquiry submissions from your landing page.
                 </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  Signed in as <span className="text-slate-200">{adminProfile.company_name}</span>
+                </p>
               </div>
             </div>
 
@@ -158,6 +174,14 @@ export default async function AdminPage() {
               <div className="hidden rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-1 text-xs font-semibold text-white sm:inline-flex">
                 Live Portal
               </div>
+              <form action="/api/auth/logout" method="post">
+                <button
+                  type="submit"
+                  className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs font-semibold text-slate-200 transition-colors hover:border-amber-400 hover:text-amber-200"
+                >
+                  Logout
+                </button>
+              </form>
             </div>
           </div>
         </div>
