@@ -49,6 +49,18 @@ export async function POST(request: Request) {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedCompany = companyName.trim();
 
+  // Enforce single-admin registration:
+  // If there's already any admin row, block new registrations.
+  const { data: existingAdmin, error: existingError } = await supabaseServer
+    .from("admins")
+    .select("id")
+    .limit(1)
+    .maybeSingle();
+
+  if (!existingError && existingAdmin) {
+    return redirectToRegister(request, "single_exists");
+  }
+
   // Create password hash (server-side only).
   const { saltB64Url, passwordHashB64Url } = await hashNewAdminPassword(
     password

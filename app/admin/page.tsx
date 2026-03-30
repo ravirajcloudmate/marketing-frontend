@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../../lib/supabaseServer";
 import { getAdminSessionFromCookies } from "../../lib/adminAuth";
+import { AdminDashboardClient, type Inquiry as InquiryClient } from "./AdminDashboardClient";
 
 function AdminIcon({ name }: { name: "calendar" | "user" | "mail" | "phone" | "building" | "doc" }) {
   const base = "h-4 w-4 shrink-0";
@@ -124,6 +125,7 @@ type Inquiry = {
   company: string | null;
   trade_requirement: string | null;
   created_at: string;
+  status: "new" | "contacted" | "converted" | "closed";
 };
 
 export const dynamic = "force-dynamic";
@@ -138,7 +140,11 @@ export default async function AdminPage() {
     .eq("id", session.adminId)
     .maybeSingle();
 
-  if (!adminProfile) redirect("/login");
+  if (!adminProfile) {
+    // Session cookie is present, but admin record can't be found.
+    // Clear session via API route (cookie modifications must happen in a route handler).
+    redirect("/api/auth/logout");
+  }
 
   const { data, error } = await supabaseServer
     .from("inquiries")
@@ -188,41 +194,6 @@ export default async function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-500/20 via-slate-900/40 to-orange-500/15 p-5 shadow-[0_25px_60px_-40px_rgba(0,0,0,0.8)]">
-            <div className="flex items-center gap-2 text-amber-300">
-              <AdminIcon name="doc" />
-              <div className="text-sm font-semibold">Total Inquiries</div>
-            </div>
-            <div className="mt-2 text-3xl font-bold">{inquiries.length}</div>
-            <div className="mt-1 text-xs text-slate-400">Latest records first</div>
-          </div>
-
-          <div className="rounded-2xl border border-sky-500/25 bg-gradient-to-br from-sky-500/20 via-slate-900/40 to-emerald-500/15 p-5">
-            <div className="flex items-center gap-2 text-sky-300">
-              <AdminIcon name="phone" />
-              <div className="text-sm font-semibold">Contact Captured</div>
-            </div>
-            <div className="mt-2 text-3xl font-bold">
-              {inquiries.filter((x) => Boolean(x.contact_number)).length}
-            </div>
-            <div className="mt-1 text-xs text-slate-400">
-              Records with phone number
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/20 via-slate-900/40 to-violet-500/15 p-5">
-            <div className="flex items-center gap-2 text-emerald-300">
-              <AdminIcon name="mail" />
-              <div className="text-sm font-semibold">Email Ready</div>
-            </div>
-            <div className="mt-2 text-3xl font-bold">
-              {inquiries.filter((x) => Boolean(x.email)).length}
-            </div>
-            <div className="mt-1 text-xs text-slate-400">Ready for outreach</div>
-          </div>
-        </div>
-
         <div className="mb-4">
           {error && (
             <div className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-500/15 via-red-500/5 to-slate-900/20 px-4 py-3 text-sm text-red-200">
@@ -248,98 +219,7 @@ export default async function AdminPage() {
         </div>
 
         {inquiries.length > 0 && (
-          <div className="overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/35">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-gradient-to-r from-slate-950 to-slate-900">
-                <tr className="border-b border-slate-800/70 text-xs uppercase tracking-wide text-slate-400">
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="calendar" />
-                      Date
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="user" />
-                      Full Name
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="mail" />
-                      Email
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="phone" />
-                      Contact
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="building" />
-                      Company
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-bold text-slate-200">
-                    <span className="inline-flex items-center gap-2">
-                      <AdminIcon name="doc" />
-                      Trade Requirement
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {inquiries.map((inq) => (
-                  <tr
-                    key={inq.id}
-                    className="border-b border-slate-800/60 transition-colors hover:bg-slate-800/55"
-                  >
-                    <td className="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
-                      {new Date(inq.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 align-top text-sm font-semibold text-slate-50">
-                      {inq.full_name}
-                    </td>
-                    <td className="px-4 py-3 align-top text-xs break-all">
-                      <a
-                        className="text-amber-300 underline-offset-2 hover:underline"
-                        href={`mailto:${inq.email}?subject=${encodeURIComponent(
-                          "Regarding your inquiry — Findiy"
-                        )}&body=${encodeURIComponent(
-                          `Hi ${inq.full_name},\n\nThanks for reaching out to Findiy.\n\nCompany: ${inq.company ?? "—"}\nTrade requirement: ${inq.trade_requirement ?? "—"}\n\n—\nFindiy Team`
-                        )}`}
-                      >
-                        {inq.email}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3 align-top text-sm text-slate-200 whitespace-nowrap">
-                      {inq.contact_number ? (
-                        <a
-                          className="inline-flex items-center gap-2 text-emerald-300 hover:underline"
-                          href={`tel:${inq.contact_number}`}
-                        >
-                          <AdminIcon name="phone" />
-                          {inq.contact_number}
-                        </a>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 align-top text-sm text-slate-200">
-                      {inq.company || "—"}
-                    </td>
-                    <td className="px-4 py-3 align-top text-sm text-slate-200 max-w-md">
-                      <div className="line-clamp-4">
-                        {inq.trade_requirement || "—"}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminDashboardClient initialInquiries={inquiries as unknown as InquiryClient[]} />
         )}
       </main>
     </div>

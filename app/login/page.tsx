@@ -17,7 +17,7 @@ export default async function LoginPage({
     error === "invalid"
       ? "Invalid email or password."
       : error === "config"
-      ? "Admin auth is not configured. Set ADMIN_EMAIL and ADMIN_SESSION_SECRET."
+      ? "Admin auth is not configured on this environment (check Supabase env + ADMIN_SESSION_SECRET)."
       : error === "missing"
       ? "Please enter your email and password."
       : null;

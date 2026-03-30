@@ -14,7 +14,9 @@ export default async function RegisterPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const error = resolvedSearchParams?.error;
   const errorMessage =
-    error === "exists"
+    error === "single_exists"
+      ? "An admin account is already registered."
+      : error === "exists"
       ? "An account with this email already exists."
       : error === "weak"
       ? "Password is too weak. Use at least 6 characters."

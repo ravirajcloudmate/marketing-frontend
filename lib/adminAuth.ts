@@ -40,6 +40,17 @@ function getEnvOrNull() {
   };
 }
 
+export function getAdminAuthConfigError() {
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET;
+  if (!sessionSecret) return "missing_session_secret";
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return "missing_supabase_env";
+
+  return null;
+}
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -84,6 +95,9 @@ export async function verifyAdminCredentials(
   email: string,
   password: string
 ): Promise<AdminCredentials | null> {
+  const configError = getAdminAuthConfigError();
+  if (configError) return null; // caller decides what to show
+
   const { sessionSecret } = getEnvOrNull();
   if (!sessionSecret) return null; // auth not configured
 

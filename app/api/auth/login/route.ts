@@ -3,6 +3,7 @@ import {
   ADMIN_COOKIE_NAME,
   adminSessionCookieOptions,
   createAdminSessionToken,
+  getAdminAuthConfigError,
   verifyAdminCredentials,
 } from "../../../../lib/adminAuth";
 
@@ -34,6 +35,11 @@ export async function POST(request: Request) {
 
   if (!email || !password) {
     return redirectToLogin(request, "missing");
+  }
+
+  const configError = getAdminAuthConfigError();
+  if (configError) {
+    return redirectToLogin(request, "config");
   }
 
   const admin = await verifyAdminCredentials(email, password);
